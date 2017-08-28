@@ -1,5 +1,5 @@
 import argparse
-from lib import ExratesService, TrustyBank
+from lib import DummyExService
 from algos.risk_averse import RiskAverse
 
 ALGORITHMS = {
@@ -13,21 +13,20 @@ def trade(algorithm, funds, iterations=10000, log_rate=100):
         print("Error: unknown algorithm: {}".format(algorithm))
         exit(0)
 
-    bank = TrustyBank(funds)
-    exrate = ExratesService.exrate()
-    algo = RiskAverse(bank, exrate)
+    exs = DummyExService(funds)
+    algo = RiskAverse(exs)
     print(
-        "Starting with: money={}, stock={}, exrate={}"
-        .format(bank.money, bank.stock, exrate)
+        "Starting with: funds={}, stock={}, exrate={}"
+        .format(exs.funds(), exs.balance(), exs.exrate())
     )
 
     for iter in range(iterations):
-        exrate = ExratesService.exrate()
-        algo.update(exrate)
+        exs.step_exrate()
+        algo.update()
         if iter % log_rate == 0:
             print(
-                "Iteration {}: money={}, stock={}, exrate={}"
-                .format(iter, bank.money, bank.stock, exrate)
+                "Iteration {}: funds={}, stock={}, exrate={}"
+                .format(iter, exs.funds(), exs.balance(), exs.exrate())
             )
             input("continue?")
 

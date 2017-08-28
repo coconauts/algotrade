@@ -61,7 +61,7 @@ class DummyExService:
     def sell(self, value):
         stock_qty = min(value * 1.0 / self.exrate(), self._balance)
 
-        if stock_qty < 1:
+        if self._balance < stock_qty:
             raise OutOfStock
 
         self._balance -= stock_qty
@@ -73,7 +73,7 @@ class DummyExService:
         money_qty = min(value, self._funds)
         stock_qty = money_qty * 1.0 / self.exrate()
 
-        if money_qty < 1:
+        if self._funds < money_qty:
             raise OutOfMoney
 
         self._funds -= money_qty

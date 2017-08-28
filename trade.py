@@ -1,9 +1,11 @@
 import argparse
-from lib import DummyExService,  RandomRate, CSVRate
+from lib import DummyExService,  RandomRate, CSVRate, OutOfMoney, OutOfStock, EndOfFeed
 from algos.risk_averse import RiskAverse
+from algos.pirate import Pirate
 
 ALGORITHMS = {
-    'risk_averse': RiskAverse
+    'risk_averse': RiskAverse,
+    'pirate': Pirate,
 }
 
 
@@ -28,8 +30,18 @@ def trade(algorithm, funds, rate_src=None, iterations=10000, log_rate=100):
     algo = algo(exs)
 
     for iter in range(iterations):
-        exs.step_exrate()
-        algo.update()
+        try:
+            exs.step_exrate()
+        except EndOfFeed:
+            print ("Reached end of CSV feed")
+            exit(0)
+
+        try:
+            algo.update()
+        except OutOfMoney:
+            print ("WARNING: out of money")
+        except OutOfStock:
+            print ("WARNING: out of stock")
         if iter % log_rate == 0:
             print(
                 "Iteration {}: funds={}, stock={}, exrate={}"

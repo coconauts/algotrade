@@ -52,6 +52,9 @@ class DummyExService:
     def balance(self):
         return self._balance
 
+    def value(self):
+        return self._balance * self.exrate()
+
     def funds(self):
         return self._funds
 

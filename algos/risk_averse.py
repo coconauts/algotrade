@@ -2,7 +2,7 @@ import numpy as np
 
 
 class RiskAverse:
-    def __init__(self, exservice, investment_amount=100):
+    def __init__(self, exservice, investment_amount=1000):
         self.exservice = exservice
         if investment_amount is not None:
             self.exservice.buy(investment_amount)

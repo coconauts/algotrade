@@ -1,5 +1,5 @@
 import argparse
-from lib import DummyExService
+from lib import DummyExService,  RandomRate, CSVRate
 from algos.risk_averse import RiskAverse
 
 ALGORITHMS = {
@@ -7,18 +7,25 @@ ALGORITHMS = {
 }
 
 
-def trade(algorithm, funds, iterations=10000, log_rate=100):
+def trade(algorithm, funds, rate_src=None, iterations=10000, log_rate=100):
     algo = ALGORITHMS.get(algorithm)
     if not algo:
         print("Error: unknown algorithm: {}".format(algorithm))
         exit(0)
 
-    exs = DummyExService(funds)
-    algo = RiskAverse(exs)
+    if rate_src:
+        rate_generator = CSVRate(rate_src)
+    else:
+        rate_generator = RandomRate()
+
+    exs = DummyExService(funds, rate_generator)
+
     print(
         "Starting with: funds={}, stock={}, exrate={}"
         .format(exs.funds(), exs.balance(), exs.exrate())
     )
+
+    algo = algo(exs)
 
     for iter in range(iterations):
         exs.step_exrate()
@@ -38,8 +45,11 @@ if __name__ == '__main__':
                         help='algorithm to use')
     parser.add_argument('funds', type=int,
                         help='total funds in your bank account')
+    parser.add_argument('--rate_src', type=str,
+                        help='csv file to popuate exchange rate')
     parser.add_argument('--log_rate', type=int, default=100,
                         help="Log every x iterations")
+
     args = parser.parse_args()
 
-    trade(args.algo, args.funds, log_rate=args.log_rate)
+    trade(args.algo, args.funds, args.rate_src, log_rate=args.log_rate)

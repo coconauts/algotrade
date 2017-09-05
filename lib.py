@@ -59,9 +59,9 @@ class DummyExService:
         return self._funds
 
     def sell(self, value):
-        stock_qty = min(value * 1.0 / self.exrate(), self._balance)
+        stock_qty = min(value / self.exrate(), self._balance)
 
-        if self._balance < stock_qty:
+        if self._balance < stock_qty or self._balance == 0:
             raise OutOfStock
 
         self._balance -= stock_qty
@@ -70,10 +70,11 @@ class DummyExService:
         return stock_qty
 
     def buy(self, value):
+
         money_qty = min(value, self._funds)
         stock_qty = money_qty * 1.0 / self.exrate()
 
-        if self._funds < money_qty:
+        if self._funds < money_qty or self._funds == 0:
             raise OutOfMoney
 
         self._funds -= money_qty

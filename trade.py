@@ -3,11 +3,13 @@ from lib import DummyExService,  RandomRate, CSVRate, OutOfMoney, OutOfStock, En
 from algos.simple import Simple
 from algos.pirate import Pirate
 from algos.random import Random
+from algos.static import Static
 
 ALGORITHMS = {
     'simple': Simple,
     'pirate': Pirate,
     'random': Random,
+    'static': Static,
 }
 
 
@@ -23,16 +25,11 @@ def trade(algorithm, funds, rate_src=None, iterations=None):
         rate_generator = RandomRate()
 
     exs = DummyExService(funds, rate_generator)
-
-    print(
-        "Starting with: funds={}, stock={}, exrate={}"
-        .format(exs.funds(), exs.balance(), exs.exrate())
-    )
-
     algo = algo(exs)
 
     step = 0
-    import pdb
+    initial_exrate = exs.exrate()
+    initial_funds = funds
 
     while True:
         try:
@@ -53,13 +50,13 @@ def trade(algorithm, funds, rate_src=None, iterations=None):
         step += 1
 
     # Print report
-    final_funds = exs.funds() + exs.balance() * exs.exrate()
+    final_exrate = exs.exrate()
+    final_funds = exs.funds() + exs.balance() * final_exrate
     print(
         "Algorithm: {}\n".format(algorithm),
         "Iterations: {}\n".format(step),
-        "Initial funds: {}\n".format(funds),
-        "Final funds: {}\n".format(final_funds),
-        "Benefit: {}".format(final_funds - funds)
+        "Exrate diff: {}\n".format(final_exrate - initial_exrate),
+        "Benefit: {}".format(final_funds - initial_funds)
     )
 
 

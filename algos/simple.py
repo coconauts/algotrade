@@ -6,7 +6,7 @@ MIN_INVESTMENT_AMOUNT = 100
 MAX_INVESTMENT_AMOUNT = 1000
 
 
-class RiskAverse:
+class Simple:
     def __init__(self, exservice):
         self.exservice = exservice
 

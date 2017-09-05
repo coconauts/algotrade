@@ -1,15 +1,17 @@
 import argparse
 from lib import DummyExService,  RandomRate, CSVRate, OutOfMoney, OutOfStock, EndOfFeed
-from algos.risk_averse import RiskAverse
+from algos.simple import Simple
 from algos.pirate import Pirate
+from algos.random import Random
 
 ALGORITHMS = {
-    'risk_averse': RiskAverse,
+    'simple': Simple,
     'pirate': Pirate,
+    'random': Random,
 }
 
 
-def trade(algorithm, funds, rate_src=None, iterations=10000, log_rate=100):
+def trade(algorithm, funds, rate_src=None, iterations=None):
     algo = ALGORITHMS.get(algorithm)
     if not algo:
         print("Error: unknown algorithm: {}".format(algorithm))
@@ -29,25 +31,36 @@ def trade(algorithm, funds, rate_src=None, iterations=10000, log_rate=100):
 
     algo = algo(exs)
 
-    for iter in range(iterations):
+    step = 0
+    import pdb
+
+    while True:
         try:
             exs.step_exrate()
         except EndOfFeed:
-            print ("Reached end of CSV feed")
-            exit(0)
+            break
 
         try:
             algo.update()
         except OutOfMoney:
-            print ("WARNING: out of money")
+            print ("-- WARNING: out of money")
         except OutOfStock:
-            print ("WARNING: out of stock")
-        if iter % log_rate == 0:
-            print(
-                "Iteration {}: funds={}, stock={}, exrate={}"
-                .format(iter, exs.funds(), exs.balance(), exs.exrate())
-            )
-            input("continue?")
+            print ("-- WARNING: out of stock")
+
+        if iterations and step == iterations:
+            break
+
+        step += 1
+
+    # Print report
+    final_funds = exs.funds() + exs.balance() * exs.exrate()
+    print(
+        "Algorithm: {}\n".format(algorithm),
+        "Iterations: {}\n".format(step),
+        "Initial funds: {}\n".format(funds),
+        "Final funds: {}\n".format(final_funds),
+        "Benefit: {}".format(final_funds - funds)
+    )
 
 
 if __name__ == '__main__':
@@ -59,9 +72,9 @@ if __name__ == '__main__':
                         help='total funds in your bank account')
     parser.add_argument('--rate_src', type=str,
                         help='csv file to popuate exchange rate')
-    parser.add_argument('--log_rate', type=int, default=100,
-                        help="Log every x iterations")
+    parser.add_argument('--iterations', type=int,
+                        help='How many iterations to execute')
 
     args = parser.parse_args()
 
-    trade(args.algo, args.funds, args.rate_src, log_rate=args.log_rate)
+    trade(args.algo, args.funds, args.rate_src, args.iterations)

@@ -1,6 +1,6 @@
 import random
 
-INVESTMENT_AMOUNT = 100
+INVESTMENT_AMOUNT = 1000
 
 
 class Static:
